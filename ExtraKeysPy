@@ -5,8 +5,8 @@ def volume_up():
 
 def volume_down():
     keyboard.press_and_release("volume down")
-def volume_mute():
 
+def volume_mute():
     keyboard.press_and_release("volume mute")
 
 # https://stackoverflow.com/a/53346493/8142044
@@ -53,7 +53,3 @@ if __name__ == "__main__":
     keyboard.add_hotkey("ctrl+.", play_pause)
 
     keyboard.wait()
-
-
-
-
