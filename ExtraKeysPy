@@ -1,55 +1,119 @@
-import keyboard
+def main():
+    import keyboard
 
-def volume_up():
-    keyboard.press_and_release("volume up")
+    def volume_up():
+        keyboard.press_and_release("volume up")
 
-def volume_down():
-    keyboard.press_and_release("volume down")
+    def volume_down():
+        keyboard.press_and_release("volume down")
 
-def volume_mute():
-    keyboard.press_and_release("volume mute")
+    def volume_mute():
+        keyboard.press_and_release("volume mute")
 
-# https://stackoverflow.com/a/53346493/8142044
-# https://learn.microsoft.com/uk-ua/windows/win32/inputdev/virtual-key-codes
-# https://github.com/mhammond/pywin32/blob/main/win32/Lib/win32con.py
-import win32api
-from win32con import VK_MEDIA_PLAY_PAUSE, KEYEVENTF_EXTENDEDKEY, VK_MEDIA_NEXT_TRACK, VK_MEDIA_PREV_TRACK
-import win32con
-
-global last_keypress
-last_keypress = 0
-
-def send_media_key(virtualkeycode):
-    import time
+    # https://stackoverflow.com/a/53346493/8142044
+    # https://learn.microsoft.com/uk-ua/windows/win32/inputdev/virtual-key-codes
+    # https://github.com/mhammond/pywin32/blob/main/win32/Lib/win32con.py
+    # https://github.com/GrahamboJangles/ExtraKeysPy/blob/main/ExtraKeysPy
+    import win32api
+    from win32con import VK_MEDIA_PLAY_PAUSE, KEYEVENTF_EXTENDEDKEY, VK_MEDIA_NEXT_TRACK, VK_MEDIA_PREV_TRACK
+    import win32con
 
     global last_keypress
+    last_keypress = 0
 
-    # Listen, I don't know why we have to explicitly tell it to not send 100 keystrokes per second for media keys, but we do.
-    now = time.time()
-    if now - last_keypress < 0.1:
-        return
-    last_keypress = now
-    win32api.keybd_event(virtualkeycode, 0, KEYEVENTF_EXTENDEDKEY, 0)
-    #                    virtual key code, hardware scan code, flags,                         use current timestamp
-    win32api.keybd_event(virtualkeycode, 0, KEYEVENTF_EXTENDEDKEY | win32con.KEYEVENTF_KEYUP, 0)
+    def send_media_key(virtualkeycode):
+        import time
+
+        global last_keypress
+
+        # Listen, I don't know why we have to explicitly tell it to not send 100 keystrokes per second for media keys, but we do.
+        now = time.time()
+        if now - last_keypress < 0.1:
+            return
+        last_keypress = now
+        win32api.keybd_event(virtualkeycode, 0, KEYEVENTF_EXTENDEDKEY, 0)
+        #                    virtual key code, hardware scan code, flags,                         use current timestamp
+        win32api.keybd_event(virtualkeycode, 0, KEYEVENTF_EXTENDEDKEY | win32con.KEYEVENTF_KEYUP, 0)
 
 
-def play_pause():
-    send_media_key(VK_MEDIA_PLAY_PAUSE)
+    def play_pause():
+        send_media_key(VK_MEDIA_PLAY_PAUSE)
 
-def next_track():
-    send_media_key(VK_MEDIA_NEXT_TRACK)
+    def next_track():
+        send_media_key(VK_MEDIA_NEXT_TRACK)
 
-def prev_track():
-    send_media_key(VK_MEDIA_PREV_TRACK)
+    def prev_track():
+        send_media_key(VK_MEDIA_PREV_TRACK)
 
-if __name__ == "__main__":
-    keyboard.add_hotkey("alt+up", volume_up)
-    keyboard.add_hotkey("alt+down", volume_down)
-    keyboard.add_hotkey("alt+0", volume_mute)
+    if __name__ == "__main__":
+        keyboard.add_hotkey("alt+up", volume_up)
+        keyboard.add_hotkey("alt+down", volume_down)
+        keyboard.add_hotkey("alt+0", volume_mute)
 
-    keyboard.add_hotkey("ctrl+right", next_track)
-    keyboard.add_hotkey("ctrl+left", prev_track)
-    keyboard.add_hotkey("ctrl+.", play_pause)
+        keyboard.add_hotkey("ctrl+right", next_track)
+        keyboard.add_hotkey("ctrl+left", prev_track)
+        keyboard.add_hotkey("ctrl+.", play_pause)
 
-    keyboard.wait()
+        keyboard.wait()
+
+
+
+
+
+from pystray import Icon as icon, Menu as menu, MenuItem as item
+from PIL import Image
+
+# Function to show the window
+def show_window(icon, item):
+    icon.stop()
+
+# Function to quit the program
+def quit_program(icon, item):
+    icon.stop()
+    
+    # exit() only exits the current thread, so we have to kill all the other threads too.
+    # exit()
+    import psutil
+    import os
+
+    parent_pid = os.getpid()
+    parent = psutil.Process(parent_pid)
+    children = parent.children(recursive=True)
+    for child in children:
+        child.kill()
+    parent.kill()
+
+# Create an image for the system tray icon
+image = Image.open("icon.ico")
+
+# Create a menu for the system tray icon
+menu = menu(
+    # item('Show', show_window),
+    item('Quit', quit_program)
+)
+
+# Create a system tray icon with the specified image and menu
+tray_icon = icon("AltKeysPy", image, "AltKeysPy", menu)
+
+# Run the system tray icon
+# tray_icon.run()
+
+
+
+import threading
+# Function to run the system tray icon in a separate thread
+def run_tray_icon():
+    tray_icon.run()
+
+# Create a thread for the system tray icon
+tray_thread = threading.Thread(target=run_tray_icon)
+
+# Start the thread for the system tray icon
+tray_thread.start()
+
+
+
+# Make it run in the background
+import ctypes
+ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+main()
