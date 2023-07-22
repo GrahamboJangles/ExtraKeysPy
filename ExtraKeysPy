@@ -10,10 +10,6 @@ def main():
     def volume_mute():
         keyboard.press_and_release("volume mute")
 
-    # https://stackoverflow.com/a/53346493/8142044
-    # https://learn.microsoft.com/uk-ua/windows/win32/inputdev/virtual-key-codes
-    # https://github.com/mhammond/pywin32/blob/main/win32/Lib/win32con.py
-    # https://github.com/GrahamboJangles/ExtraKeysPy/blob/main/ExtraKeysPy
     import win32api
     from win32con import VK_MEDIA_PLAY_PAUSE, KEYEVENTF_EXTENDEDKEY, VK_MEDIA_NEXT_TRACK, VK_MEDIA_PREV_TRACK
     import win32con
@@ -26,15 +22,12 @@ def main():
 
         global last_keypress
 
-        # Listen, I don't know why we have to explicitly tell it to not send 100 keystrokes per second for media keys, but we do.
         now = time.time()
         if now - last_keypress < 0.1:
             return
         last_keypress = now
         win32api.keybd_event(virtualkeycode, 0, KEYEVENTF_EXTENDEDKEY, 0)
-        #                    virtual key code, hardware scan code, flags,                         use current timestamp
         win32api.keybd_event(virtualkeycode, 0, KEYEVENTF_EXTENDEDKEY | win32con.KEYEVENTF_KEYUP, 0)
-
 
     def play_pause():
         send_media_key(VK_MEDIA_PLAY_PAUSE)
@@ -46,19 +39,15 @@ def main():
         send_media_key(VK_MEDIA_PREV_TRACK)
 
     if __name__ == "__main__":
-        keyboard.add_hotkey("alt+up", volume_up)
-        keyboard.add_hotkey("alt+down", volume_down)
-        keyboard.add_hotkey("alt+0", volume_mute)
+        keyboard.add_hotkey("ctrl+alt+up", volume_up)
+        keyboard.add_hotkey("ctrl+alt+down", volume_down)
+        keyboard.add_hotkey("ctrl+alt+0", volume_mute)
 
-        keyboard.add_hotkey("ctrl+right", next_track)
-        keyboard.add_hotkey("ctrl+left", prev_track)
-        keyboard.add_hotkey("ctrl+.", play_pause)
+        keyboard.add_hotkey("ctrl+alt+right", next_track)
+        keyboard.add_hotkey("ctrl+alt+left", prev_track)
+        keyboard.add_hotkey("ctrl+alt+1", play_pause)
 
         keyboard.wait()
-
-
-
-
 
 from pystray import Icon as icon, Menu as menu, MenuItem as item
 from PIL import Image
@@ -93,7 +82,7 @@ menu = menu(
 )
 
 # Create a system tray icon with the specified image and menu
-tray_icon = icon("AltKeysPy", image, "AltKeysPy", menu)
+tray_icon = icon("ExtraKeysPy", image, "ExtraKeysPy", menu)
 
 # Run the system tray icon
 # tray_icon.run()
